@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mouse Sens Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #1F2022;
+      --bg-card: #2C2C31;
+      --bg-input: #37373D;
+      --accent: #638CDE;
+      --text-main: #FFFFFF;
+      --text-muted: rgba(255, 255, 255, 0.75);
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --radius-card: 25px;
+      --radius-input: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Manrope', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 24px 70px;
+    }
+
+    /* Top Bar */
+    .topbar {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .pill-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 6px 16px 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-main);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .pill-badge:hover {
+      background: var(--bg-input);
+    }
+
+    .avatar-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #18191b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 3px;
+    }
+
+    .avatar-circle svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .lang-pill {
+      padding: 6px 14px 6px 10px;
+      gap: 8px;
+    }
+
+    .flag-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Header & Mode Switch */
+    h1 {
+      font-size: 42px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .mode-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 26px;
+    }
+
+    .mode-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 9px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mode-tab.active {
+      background: var(--bg-card);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    /* Layout Container */
+    .main-container {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Main Card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 28px 32px 32px;
+    }
+
+    .converter-grid {
+      display: grid;
+      grid-template-columns: 1fr 44px 1fr;
+      column-gap: 14px;
+      row-gap: 22px;
+      align-items: end;
+    }
+
+    .field-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .field-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .select-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .input-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-input);
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 500;
+      height: 50px;
+      padding: 0 18px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-control:focus {
+      border-color: var(--accent);
+    }
+
+    select.input-control {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 42px;
+      cursor: pointer;
+    }
+
+    .select-chevron {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+    }
+
+    /* Swap Button with Gradient Ring */
+    .swap-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background:
+        linear-gradient(var(--bg-input), var(--bg-input)) padding-box,
+        linear-gradient(135deg, var(--accent) 0%, rgba(99, 140, 222, 0.1) 100%) border-box;
+      border: 1.5px solid transparent;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .swap-btn:hover {
+      transform: rotate(180deg);
+      filter: brightness(1.12);
+    }
+
+    /* Big Sensitivity Boxes */
+    .big-box {
+      height: 112px;
+      border-radius: var(--radius-input);
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .big-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 42px;
+      font-weight: 600;
+    }
+
+    .big-input::-webkit-outer-spin-button,
+    .big-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Result Box with Gradient Outline */
+    .big-box.result-highlight {
+      background:
+        linear-gradient(var(--bg-input), var(--bg-input)) padding-box,
+        linear-gradient(90deg, var(--accent) 0%, rgba(99, 140, 222, 0.08) 100%) border-box;
+      border: 1.5px solid transparent;
+      justify-content: space-between;
+    }
+
+    .result-number {
+      font-size: 42px;
+      font-weight: 600;
+      color: var(--text-main);
+      user-select: all;
+    }
+
+    .copy-circle-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .copy-circle-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .copy-circle-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Stats Cards Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      height: 162px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-dual {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 92px;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .stat-item .sub {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .stat-item .val {
+      font-size: 42px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Slider Area */
+    .slider-wrapper {
+      width: 100%;
+      max-width: 580px;
+      margin: 34px auto 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .scale-labels {
+      position: relative;
+      height: 22px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .scale-mark {
+      position: absolute;
+      transform: translateX(-50%);
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: opacity 0.18s ease;
+    }
+
+    .scale-mark.dynamic {
+      color: var(--text-main);
+      font-weight: 600;
+      z-index: 3;
+      will-change: left;
+    }
+
+    /* Track Pill */
+    .track-outer {
+      position: relative;
+      width: 100%;
+      height: 36px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #638CDE 0%, rgba(99, 140, 222, 0.35) 55%, rgba(44, 44, 49, 0.95) 100%);
+      display: flex;
+      align-items: center;
+    }
+
+    .ticks-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .tick {
+      position: absolute;
+      top: 0;
+      width: 1.5px;
+      background: rgba(255, 255, 255, 0.65);
+      transform: translateX(-50%);
+    }
+
+    .tick.major {
+      height: 11px;
+    }
+
+    .tick.minor {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .range-input {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      z-index: 4;
+    }
+
+    .range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+      cursor: grab;
+      transition: transform 0.12s ease;
+    }
+
+    .range-input::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.12);
+    }
+
+    /* Reference Range Bars */
+    .pro-ranges {
+      position: relative;
+      width: 100%;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .range-group {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .range-bar {
+      height: 12px;
+      border-radius: 999px;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    .range-bar.from-bar {
+      background: #2C2C31;
+    }
+
+    .range-bar.to-bar {
+      background: #FFFFFF;
+    }
+
+    .range-caption {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-main);
+      white-space: nowrap;
+      transition: margin-left 0.3s ease;
+    }
+
+    @media (max-width: 760px) {
+      .converter-grid {
+        grid-template-columns: 1fr;
+      }
+      .swap-btn {
+        margin: 0 auto;
+      }
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <div class="topbar">
+    <a href="https://t.me/strah" target="_blank" rel="noopener noreferrer" class="pill-badge" title="@strah">
+      <div class="avatar-circle">
+        <!-- Точный векторный силуэт из прикреплённого Group 6.svg -->
+        <svg viewBox="0 0 200 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#FFFFFF" d="M94 2 C98 5, 99 8, 98 9 C88 9, 77 10, 68 15 C61 19, 55 24, 53 24 C48 22, 41 18, 39 17 C40 24, 43 29, 45 31 C42 33, 38 35, 37 36 C32 35, 26 33, 25 34 C27 37, 30 39, 32 40 C28 39, 25 38, 25 39 C27 42, 31 45, 32 46 C26 50, 20 53, 16 58 C13 62, 11 66, 12 67 C13 68, 16 69, 17 69 C13 75, 10 82, 9 91 C7 99, 6 108, 6 115 C7 115, 10 114, 11 115 C11 117, 8 119, 7 120 C11 120, 15 119, 17 121 C12 126, 6 132, 1 136 C2 138, 8 137, 15 134 C11 140, 4 146, 0 151 C0 153, 0 156, 1 157 C6 153, 11 148, 15 146 C12 151, 10 159, 10 166 C11 164, 13 161, 14 160 C14 166, 13 174, 12 181 C14 177, 17 172, 19 172 C18 176, 15 182, 14 186 C16 183, 18 178, 19 176 C19 184, 19 193, 21 199 C24 193, 28 186, 31 183 C31 187, 31 192, 29 195 C31 194, 33 191, 34 191 C33 196, 31 203, 30 209 C32 204, 34 199, 35 197 C35 203, 33 211, 33 216 C35 213, 36 209, 37 209 C37 213, 37 219, 37 222 C39 219, 41 215, 42 213 C42 218, 41 223, 42 226 C44 221, 47 215, 48 210 C49 204, 47 196, 44 189 C41 182, 42 170, 43 162 C45 163, 47 165, 48 166 C49 158, 49 149, 48 144 C49 144, 50 144, 51 141 C52 146, 54 152, 57 152 C59 151, 57 141, 56 131 C55 123, 55 117, 56 115 C59 110, 62 103, 64 101 C63 106, 62 111, 62 114 C64 114, 65 110, 66 109 C65 115, 64 124, 65 129 C69 121, 75 112, 80 106 C78 115, 78 126, 80 132 C83 126, 87 117, 89 111 C89 116, 88 121, 88 125 C90 121, 93 116, 95 113 C95 119, 95 125, 95 130 C98 125, 100 120, 102 116 C102 122, 102 129, 103 133 C108 124, 116 110, 123 101 C121 108, 117 117, 114 123 C119 122, 124 119, 128 117 C124 122, 121 128, 119 133 C122 133, 124 132, 126 132 C124 135, 122 137, 121 139 C125 135, 130 131, 135 129 C131 136, 126 144, 123 151 C125 150, 128 148, 130 149 C129 151, 126 154, 126 156 C131 156, 137 156, 142 157 C137 161, 132 166, 129 170 C133 170, 138 169, 141 168 C137 171, 133 175, 131 179 C134 178, 138 176, 141 176 C137 182, 133 187, 130 192 C134 189, 138 186, 141 185 C140 188, 138 190, 137 193 C140 192, 144 189, 147 187 C141 193, 135 200, 131 206 C137 202, 143 197, 148 195 C145 200, 140 207, 137 212 C143 212, 152 208, 158 201 C159 200, 161 201, 162 201 C162 199, 161 197, 161 195 C162 192, 163 189, 165 188 C172 186, 179 183, 182 180 C180 179, 177 178, 176 177 C178 176, 180 176, 182 174 C184 172, 187 169, 187 166 C184 167, 181 169, 178 170 C180 165, 183 158, 183 154 C182 154, 180 156, 179 158 C180 153, 183 149, 185 145 C186 140, 185 134, 185 128 C190 128, 195 128, 200 127 C194 124,189 120, 187 114 C184 105, 183 94, 180 84 C177 74, 174 64, 172 58 C169 56, 166 55, 164 53 C166 52, 168 51, 169 49 C163 46, 155 45, 149 41 C144 37, 142 30, 137 25 C134 21, 130 19, 128 16 C126 12, 124 8, 122 5 C123 9, 124 13, 124 16 C118 14, 111 10, 104 8 C100 6, 97 4, 94 2 Z" transform="scale(1, 0.74)"/>
+        </svg>
+      </div>
+      <span>@strah</span>
+    </a>
+
+    <button class="pill-badge lang-pill" id="langBtn" onclick="toggleLang()">
+      <span class="flag-icon" id="flagContainer">
+        <svg viewBox="0 0 32 32" width="24" height="24">
+          <rect width="32" height="32" fill="#B22234"/>
+          <path d="M0,4h32M0,10h32M0,16h32M0,22h32M0,28h32" stroke="#FFF" stroke-width="2.5"/>
+          <rect width="15" height="16" fill="#3C3B6E"/>
+        </svg>
+      </span>
+      <span id="langText">EN</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Title -->
+  <h1 id="mainTitle">Mouse Sens Converter</h1>
+
+  <!-- Mode Switch -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabGame" onclick="switchMode('game')">Game</button>
+    <button class="mode-tab" id="tabCm" onclick="switchMode('cm')">cm/360</button>
+  </div>
+
+  <div class="main-container">
+    <!-- Main Converter Card -->
+    <div class="card">
+      <div class="converter-grid">
+
+        <!-- Row 1: Game Selectors -->
+        <div class="field-block">
+          <label class="field-label" id="lblConvertFrom">Convert from</label>
+          <div class="select-wrap">
+            <select class="input-control" id="gameFrom">
+              <option value="cs" selected>Counter-Strike</option>
+              <option value="valorant">Valorant</option>
+              <option value="apex">Apex Legends</option>
+              <option value="overwatch">Overwatch 2</option>
+              <option value="r6">Rainbow Six Siege</option>
+            </select>
+            <svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <button class="swap-btn" onclick="swapGames()" title="Swap games">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10L3 6L7 2"/>
+            <path d="M21 6H3"/>
+            <path d="M17 14L21 18L17 22"/>
+            <path d="M3 18H21"/>
+          </svg>
+        </button>
+
+        <div class="field-block">
+          <label class="field-label" id="lblConvertTo">Convert to</label>
+          <div class="select-wrap">
+            <select class="input-control" id="gameTo">
+              <option value="cs">Counter-Strike</option>
+              <option value="valorant" selected>Valorant</option>
+              <option value="apex">Apex Legends</option>
+              <option value="overwatch">Overwatch 2</option>
+              <option value="r6">Rainbow Six Siege</option>
+            </select>
+            <svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Row 2: Sensitivity Input & Result -->
+        <div class="field-block">
+          <label class="field-label" id="lblSensFrom">Sensitivity in Counter-Strike</label>
+          <div class="big-box">
+            <input type="number" step="0.01" class="big-input" id="sensInput" value="0.5">
+          </div>
+        </div>
+
+        <div></div>
+
+        <div class="field-block">
+          <label class="field-label" id="lblSensTo">Sensitivity in Valorant</label>
+          <div class="big-box result-highlight">
+            <span class="result-number" id="sensOutput">0.471</span>
+            <button class="copy-circle-btn" id="copyBtn" onclick="copySensitivity()" title="Copy sensitivity">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 3: Independent Mouse DPI -->
+        <div class="field-block">
+          <label class="field-label" id="lblDpiFrom">Mouse DPI</label>
+          <input type="number" step="50" class="input-control" id="dpiFrom" value="2400">
+        </div>
+
+        <div></div>
+
+        <div class="field-block">
+          <label class="field-label" id="lblDpiTo">Mouse DPI</label>
+          <input type="number" step="50" class="input-control" id="dpiTo" value="800">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Stats Row: cm/360 | in/360 and eDPI -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-dual">
+          <div class="stat-item">
+            <span class="sub">cm/360</span>
+            <span class="val" id="statCm">34.64</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="sub">in/360</span>
+            <span class="val" id="statIn">13.64</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-item">
+          <span class="sub">eDPI</span>
+          <span class="val" id="statEdpi">377</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Interactive Slider -->
+    <div class="slider-wrapper">
+      <div class="scale-labels">
+        <span class="scale-mark" data-cm="10" style="left: 2%;">10 cm</span>
+        <span class="scale-mark" data-cm="20" style="left: 14.28%;">20 cm</span>
+        <span class="scale-mark" data-cm="35" style="left: 35.71%;">35 cm</span>
+        <span class="scale-mark dynamic" id="dynCmLabel" style="left: 35.2%;">34.64 cm</span>
+        <span class="scale-mark" data-cm="50" style="left: 57.14%;">50 cm</span>
+        <span class="scale-mark" data-cm="65" style="left: 78.57%;">65 cm</span>
+        <span class="scale-mark" data-cm="80" style="left: 98%;">80 cm</span>
+      </div>
+
+      <div class="track-outer">
+        <div class="ticks-layer">
+          <!-- Major & Minor Ticks along 10..80 cm -->
+          <span class="tick major" style="left: 2.1%;"></span>
+          <span class="tick minor" style="left: 7.14%;"></span>
+          <span class="tick major" style="left: 14.28%;"></span>
+          <span class="tick minor" style="left: 25.00%;"></span>
+          <span class="tick major" style="left: 35.71%;"></span>
+          <span class="tick minor" style="left: 46.43%;"></span>
+          <span class="tick major" style="left: 57.14%;"></span>
+          <span class="tick minor" style="left: 67.86%;"></span>
+          <span class="tick major" style="left: 78.57%;"></span>
+          <span class="tick minor" style="left: 89.29%;"></span>
+          <span class="tick major" style="left: 97.9%;"></span>
+        </div>
+        <input type="range" class="range-input" id="cmRange" min="10" max="80" step="0.01" value="34.64">
+      </div>
+
+      <!-- Pro Reference Ranges -->
+      <div class="pro-ranges">
+        <div class="range-group">
+          <div class="range-bar from-bar" id="fromRangeBar"></div>
+          <div class="range-caption" id="fromRangeText">From Counter-Strike  33-65 cm</div>
+        </div>
+        <div class="range-group">
+          <div class="range-bar to-bar" id="toRangeBar"></div>
+          <div class="range-caption" id="toRangeText">To valorant  36-71 cm</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const GAMES = {
+      cs: { name: 'Counter-Strike', yaw: 0.022, proRange: [33, 65] },
+      valorant: { name: 'Valorant', yaw: 0.07, proRange: [36, 71] },
+      apex: { name: 'Apex Legends', yaw: 0.022, proRange: [25, 48] },
+      overwatch: { name: 'Overwatch 2', yaw: 0.0066, proRange: [22, 45] },
+      r6: { name: 'Rainbow Six Siege', yaw: 0.00572958, proRange: [30, 62] }
+    };
+
+    let currentMode = 'game';
+    let currentLang = 'en';
+
+    const gameFromEl = document.getElementById('gameFrom');
+    const gameToEl = document.getElementById('gameTo');
+    const sensInputEl = document.getElementById('sensInput');
+    const sensOutputEl = document.getElementById('sensOutput');
+    const dpiFromEl = document.getElementById('dpiFrom');
+    const dpiToEl = document.getElementById('dpiTo');
+    const statCmEl = document.getElementById('statCm');
+    const statInEl = document.getElementById('statIn');
+    const statEdpiEl = document.getElementById('statEdpi');
+    const cmRangeEl = document.getElementById('cmRange');
+    const dynCmLabelEl = document.getElementById('dynCmLabel');
+    const lblSensFromEl = document.getElementById('lblSensFrom');
+    const lblSensToEl = document.getElementById('lblSensTo');
+    const staticMarks = document.querySelectorAll('.scale-mark[data-cm]');
+
+    // Переменные для эффекта плавной инерции ("отставания") текста за бегунком
+    let targetPercent = 35.2;
+    let currentPercent = 35.2;
+    let targetCmValue = 34.64;
+
+    function animateLabelFollow() {
+      // Коэффициент 0.14 создает мягкое, заметное глазу запаздывание за бегунком
+      currentPercent += (targetPercent - currentPercent) * 0.14;
+      dynCmLabelEl.style.left = `${currentPercent.toFixed(3)}%`;
+
+      // Скрываем статические отметки (10, 20, 35, 50, 65, 80), когда плавающий текст приближается к ним
+      const currentAnimatedCm = 10 + (currentPercent / 100) * 70;
+      staticMarks.forEach(mark => {
+        const markCm = parseFloat(mark.getAttribute('data-cm'));
+        mark.style.opacity = Math.abs(currentAnimatedCm - markCm) < 5.5 ? '0' : '1';
+      });
+
+      requestAnimationFrame(animateLabelFollow);
+    }
+    requestAnimationFrame(animateLabelFollow);
+
+    function formatSens(num) {
+      if (!isFinite(num) || num <= 0) return '0';
+      return parseFloat(num.toFixed(3)).toString();
+    }
+
+    function updateLabels() {
+      const fromName = GAMES[gameFromEl.value].name;
+      const toName = GAMES[gameToEl.value].name;
+
+      if (currentLang === 'en') {
+        lblSensFromEl.textContent = currentMode === 'game' ? `Sensitivity in ${fromName}` : 'Target cm/360';
+        lblSensToEl.textContent = `Sensitivity in ${toName}`;
+      } else {
+        lblSensFromEl.textContent = currentMode === 'game' ? `Сенса в ${fromName}` : 'Дистанция cm/360';
+        lblSensToEl.textContent = `Сенса в ${toName}`;
+      }
+    }
+
+    function updateProBars() {
+      const fromGame = GAMES[gameFromEl.value];
+      const toGame = GAMES[gameToEl.value];
+
+      const setBar = (barEl, textEl, range, prefix, gameName) => {
+        const minPct = ((range[0] - 10) / 70) * 100;
+        const widthPct = ((range[1] - range[0]) / 70) * 100;
+        barEl.style.marginLeft = `${minPct}%`;
+        barEl.style.width = `${widthPct}%`;
+        textEl.style.marginLeft = `${minPct}%`;
+        textEl.textContent = `${prefix} ${gameName}  ${range[0]}-${range[1]} cm`;
+      };
+
+      const fromPrefix = currentLang === 'en' ? 'From' : 'Из';
+      const toPrefix = currentLang === 'en' ? 'To' : 'В';
+
+      setBar(
+        document.getElementById('fromRangeBar'),
+        document.getElementById('fromRangeText'),
+        fromGame.proRange,
+        fromPrefix,
+        fromGame.name
+      );
+
+      setBar(
+        document.getElementById('toRangeBar'),
+        document.getElementById('toRangeText'),
+        toGame.proRange,
+        toPrefix,
+        toGame.name.toLowerCase() === 'valorant' ? 'valorant' : toGame.name
+      );
+    }
+
+    function syncSliderVisuals(cm360) {
+      const clamped = Math.min(Math.max(cm360, 10), 80);
+      cmRangeEl.value = clamped;
+      targetCmValue = cm360;
+      targetPercent = ((clamped - 10) / 70) * 100;
+      dynCmLabelEl.textContent = `${cm360.toFixed(2)} cm`;
+    }
+
+    function calculate(fromSlider = false) {
+      updateLabels();
+      updateProBars();
+
+      const fromKey = gameFromEl.value;
+      const toKey = gameToEl.value;
+      const yawFrom = GAMES[fromKey].yaw;
+      const yawTo = GAMES[toKey].yaw;
+
+      const dpiFrom = parseFloat(dpiFromEl.value) || 800;
+      const dpiTo = parseFloat(dpiToEl.value) || 800;
+
+      let cm360 = 34.64;
+
+      if (fromSlider) {
+        cm360 = parseFloat(cmRangeEl.value) || 34.64;
+        if (currentMode === 'game') {
+          const calcSourceSens = (360 * 2.54) / (cm360 * dpiFrom * yawFrom);
+          sensInputEl.value = parseFloat(calcSourceSens.toFixed(3));
+        } else {
+          sensInputEl.value = cm360.toFixed(2);
+        }
+      } else {
+        const inputVal = parseFloat(sensInputEl.value) || 0;
+        if (currentMode === 'game') {
+          if (inputVal > 0 && dpiFrom > 0) {
+            cm360 = (360 * 2.54) / (dpiFrom * inputVal * yawFrom);
+          } else {
+            cm360 = 0;
+          }
+        } else {
+          cm360 = inputVal;
+        }
+      }
+
+      if (cm360 > 0 && dpiTo > 0) {
+        const targetSens = (360 * 2.54) / (cm360 * dpiTo * yawTo);
+        const in360 = cm360 / 2.54;
+        const edpi = Math.round(targetSens * dpiTo);
+
+        sensOutputEl.textContent = formatSens(targetSens);
+        statCmEl.textContent = cm360.toFixed(2);
+        statInEl.textContent = in360.toFixed(2);
+        statEdpiEl.textContent = edpi.toString();
+
+        syncSliderVisuals(cm360);
+      } else {
+        sensOutputEl.textContent = '0';
+        statCmEl.textContent = '0.00';
+        statInEl.textContent = '0.00';
+        statEdpiEl.textContent = '0';
+      }
+    }
+
+    function switchMode(mode) {
+      if (currentMode === mode) return;
+      currentMode = mode;
+
+      document.getElementById('tabGame').classList.toggle('active', mode === 'game');
+      document.getElementById('tabCm').classList.toggle('active', mode === 'cm');
+
+      if (mode === 'cm') {
+        gameFromEl.disabled = true;
+        dpiFromEl.disabled = true;
+        dpiFromEl.style.opacity = '0.45';
+        sensInputEl.value = parseFloat(statCmEl.textContent) || 34.64;
+      } else {
+        gameFromEl.disabled = false;
+        dpiFromEl.disabled = false;
+        dpiFromEl.style.opacity = '1';
+        const curCm = parseFloat(statCmEl.textContent) || 34.64;
+        const dpiFrom = parseFloat(dpiFromEl.value) || 2400;
+        const yawFrom = GAMES[gameFromEl.value].yaw;
+        const restoredSens = (360 * 2.54) / (curCm * dpiFrom * yawFrom);
+        sensInputEl.value = parseFloat(restoredSens.toFixed(3));
+      }
+      calculate();
+    }
+
+    function swapGames() {
+      if (currentMode === 'cm') return;
+      const tmpGame = gameFromEl.value;
+      gameFromEl.value = gameToEl.value;
+      gameToEl.value = tmpGame;
+
+      const tmpDpi = dpiFromEl.value;
+      dpiFromEl.value = dpiToEl.value;
+      dpiToEl.value = tmpDpi;
+
+      sensInputEl.value = sensOutputEl.textContent;
+      calculate();
+    }
+
+    function copySensitivity() {
+      const val = sensOutputEl.textContent;
+      navigator.clipboard.writeText(val).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.style.transform = 'scale(0.88)';
+        btn.style.background = '#4caf50';
+        setTimeout(() => {
+          btn.style.transform = '';
+          btn.style.background = '';
+        }, 700);
+      });
+    }
+
+    function toggleLang() {
+      currentLang = currentLang === 'en' ? 'ru' : 'en';
+      document.getElementById('langText').textContent = currentLang.toUpperCase();
+      document.getElementById('mainTitle').textContent =
+        currentLang === 'en' ? 'Mouse Sens Converter' : 'Конвертер чувствительности';
+      document.getElementById('lblConvertFrom').textContent =
+        currentLang === 'en' ? 'Convert from' : 'Конвертировать из';
+      document.getElementById('lblConvertTo').textContent =
+        currentLang === 'en' ? 'Convert to' : 'Конвертировать в';
+      calculate();
+    }
+
+    // Event Listeners
+    [gameFromEl, gameToEl, sensInputEl, dpiFromEl, dpiToEl].forEach(el => {
+      el.addEventListener('input', () => calculate(false));
+      el.addEventListener('change', () => calculate(false));
+    });
+
+    cmRangeEl.addEventListener('input', () => calculate(true));
+
+    // Initial render
+    calculate(false);
+  </script>
+</body>
+</html>
